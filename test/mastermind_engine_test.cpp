@@ -50,10 +50,10 @@ TEST_F(MastermindEngineTest, ShouldGameObjectBeCorrectlyMoveConstructed) {
     engine.check_solution(std::vector<int>{ { 1, 3, 4, 6, 5 } });
     auto origin_tries_left = engine.get_tries_left();
     auto origin_status = engine.get_status();
-    auto origin_correct_solution = engine.correct_answer().value().get();
+    auto origin_correct_solution = engine.get_correct_solution().value().get();
 
     mastermind::mastermind_engine moved_game{ std::move(engine) };
-    auto current_correct_solution = moved_game.correct_answer();
+    auto current_correct_solution = moved_game.get_correct_solution();
 
     EXPECT_EQ(moved_game.get_tries_left(), origin_tries_left);
     EXPECT_EQ(moved_game.get_status(), origin_status);
@@ -62,7 +62,7 @@ TEST_F(MastermindEngineTest, ShouldGameObjectBeCorrectlyMoveConstructed) {
 
     EXPECT_EQ(engine.get_tries_left(), 0);
     EXPECT_EQ(engine.get_status(), mastermind::game_status::NOT_INITIALIZED);
-    EXPECT_EQ(engine.correct_answer(), std::nullopt);
+    EXPECT_EQ(engine.get_correct_solution(), std::nullopt);
 }
 
 TEST_F(MastermindEngineTest, ShouldGameObjectBeCorrectlyMoveAssigned) {
@@ -70,11 +70,11 @@ TEST_F(MastermindEngineTest, ShouldGameObjectBeCorrectlyMoveAssigned) {
     engine.check_solution(std::vector<int>{ { 1, 3, 4, 6, 5 } });
     auto origin_tries_left = engine.get_tries_left();
     auto origin_status = engine.get_status();
-    auto origin_correct_solution = engine.correct_answer().value().get();
+    auto origin_correct_solution = engine.get_correct_solution().value().get();
 
     mastermind::mastermind_engine moved_game{ test_generator };
     moved_game = std::move(engine);
-    auto current_correct_solution = moved_game.correct_answer();
+    auto current_correct_solution = moved_game.get_correct_solution();
 
     EXPECT_EQ(moved_game.get_tries_left(), origin_tries_left);
     EXPECT_EQ(moved_game.get_status(), origin_status);
@@ -83,18 +83,18 @@ TEST_F(MastermindEngineTest, ShouldGameObjectBeCorrectlyMoveAssigned) {
 
     EXPECT_EQ(engine.get_tries_left(), 0);
     EXPECT_EQ(engine.get_status(), mastermind::game_status::NOT_INITIALIZED);
-    EXPECT_EQ(engine.correct_answer(), std::nullopt);
+    EXPECT_EQ(engine.get_correct_solution(), std::nullopt);
 }
 
 TEST_F(MastermindEngineTest, ShouldCorrectAnswerBeNulloptBeforeStart) {
-    EXPECT_EQ(engine.correct_answer(), std::nullopt);
+    EXPECT_EQ(engine.get_correct_solution(), std::nullopt);
 }
 
 TEST_F(MastermindEngineTest, ShouldCorrectAnswerBeTheSameAsGenerated) {
     EXPECT_CALL(generator_mock, function_operator()).Times(Exactly(1));
 
     engine.start_game(PATTERN_SIZE, 8);
-    auto result = engine.correct_answer();
+    auto result = engine.get_correct_solution();
 
     ASSERT_TRUE(result.has_value());
     EXPECT_THAT(result.value().get(), ::testing::ContainerEq(test_solution));
