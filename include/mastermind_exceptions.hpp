@@ -19,4 +19,12 @@ namespace mastermind {
             : ::std::logic_error{ "Max tries value must be greater than zero" }
         {}
     };
+
+    class indistinct_values_error : public std::logic_error {
+    public:
+        indistinct_values_error()
+            : ::std::logic_error{ "Values of the code must be distinct" }
+        {}
+    };
+
 }
