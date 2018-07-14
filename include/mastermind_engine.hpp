@@ -14,7 +14,7 @@ namespace mastermind {
     class mastermind_engine {
     public:
         mastermind_engine() = delete;
-        explicit mastermind_engine(std::function<std::vector<Item>(size_t)> pattern_generator);
+        explicit mastermind_engine(std::function<std::vector<Item>(size_t)> code_pattern_generator);
         mastermind_engine(const mastermind_engine<Item>&) = delete;
         mastermind_engine<Item>& operator=(const mastermind_engine<Item>&) = delete;
         mastermind_engine(mastermind_engine<Item>&& me);
@@ -32,7 +32,7 @@ namespace mastermind {
     private:
         std::function<std::vector<Item>(size_t)> m_code_generator;
         game_status m_status{ game_status::NOT_INITIALIZED };
-        std::vector<Item> m_solution{};
+        std::vector<Item> m_code_pattern{};
         size_t m_tries_left{ 0 };
         game_result m_current_result{ false, 0, 0 };
 
@@ -41,8 +41,8 @@ namespace mastermind {
     };
 
     template <typename Item>
-    mastermind_engine<Item>::mastermind_engine(std::function<std::vector<Item>(size_t)> pattern_generator)
-        : m_code_generator{ pattern_generator } {
+    mastermind_engine<Item>::mastermind_engine(std::function<std::vector<Item>(size_t)> code_pattern_generator)
+        : m_code_generator{ code_pattern_generator } {
     }
 
     template <typename Item>
@@ -55,7 +55,7 @@ namespace mastermind {
         m_code_generator = me.m_code_generator;
         m_status = me.m_status;
         m_tries_left = me.m_tries_left;
-        m_solution = std::move(me.m_solution);
+        m_code_pattern = std::move(me.m_code_pattern);
         m_current_result = me.m_current_result;
 
         me.m_status = game_status::NOT_INITIALIZED;
@@ -70,7 +70,7 @@ namespace mastermind {
             return std::nullopt;
         }
         else {
-            return std::cref(m_solution);
+            return std::cref(m_code_pattern);
         }
     }
 
@@ -80,15 +80,15 @@ namespace mastermind {
             throw zero_max_tries_value_error();
         }
 
-        m_solution = std::move(m_code_generator(code_size));
+        m_code_pattern = std::move(m_code_generator(code_size));
         m_tries_left = max_tries;
         m_status = game_status::IN_GAME;
     }
 
     template <typename Item>
     std::optional<game_result> mastermind_engine<Item>::check_solution(const std::vector<Item> s) {
-        if (s.size() != m_solution.size()) {
-            throw mastermind::incorrect_solution_size_error{ s.size(), m_solution.size() };
+        if (s.size() != m_code_pattern.size()) {
+            throw mastermind::incorrect_code_size_error{ s.size(), m_code_pattern.size() };
         }
 
         return (m_status == game_status::NOT_INITIALIZED) ? std::nullopt : get_game_result(s);
@@ -121,8 +121,8 @@ namespace mastermind {
         size_t in_color{ 0 };
 
         for (size_t i = 0; i < s.size(); ++i) {
-            for (size_t j = 0; j < m_solution.size(); ++j) {
-                if (s[i] == m_solution[j]) {
+            for (size_t j = 0; j < m_code_pattern.size(); ++j) {
+                if (s[i] == m_code_pattern[j]) {
                     if (i == j) {
                         ++in_place;
                     }
@@ -134,6 +134,6 @@ namespace mastermind {
             }
         }
 
-        return game_result{ (in_place == m_solution.size()), in_place, in_color };
+        return game_result{ (in_place == m_code_pattern.size()), in_place, in_color };
     }
 }

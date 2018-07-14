@@ -109,10 +109,12 @@ TEST_F(MastermindEngineTest, ShouldTriesLeftReturnMaxTriesJustAfterStart) {
     EXPECT_EQ(engine.get_tries_left(), MAX_TRIES);
 }
 
-TEST_F(MastermindEngineTest, ShouldCheckSolutionThrowIncorrectSolutionSizeErrorForInvalidSizedSolution) {
+TEST_F(MastermindEngineTest, ShouldCheckSolutionThrowIncorrectCodeSizeErrorForInvalidSizedSolution) {
+    EXPECT_CALL(generator_mock, function_operator()).Times(Exactly(1));
     mastermind::mastermind_engine me(test_generator);
+    me.start_game(PATTERN_SIZE, 6);
 
-    EXPECT_THROW(me.check_solution(std::vector<int>{ {1, 2, 3, 4, 5, 6} }), mastermind::incorrect_solution_size_error);
+    EXPECT_THROW(me.check_solution(std::vector<int>{ {1, 2, 3, 4, 5, 6} }), mastermind::incorrect_code_size_error);
 }
 
 TEST_F(MastermindEngineTest, ShouldGetStatusReturnNotInitializedStatusIfGameIsNotEnded) {
