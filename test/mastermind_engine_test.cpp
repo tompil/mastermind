@@ -246,8 +246,3 @@ TEST_F(MastermindEngineTest, ShouldTriesLeftDecrementAfterIncorrectSolution) {
 TEST_F(MastermindEngineTest, ShouldStartGameThrowZeroMaxTriesValueErrorIfMaxTriesIsZero) {
     ASSERT_THROW(engine.start_game(PATTERN_SIZE, 0), mastermind::zero_max_tries_value_error);
 }
-
-int main(int argc, char** argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
