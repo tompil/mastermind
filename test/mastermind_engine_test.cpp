@@ -109,12 +109,29 @@ TEST_F(MastermindEngineTest, ShouldTriesLeftReturnMaxTriesJustAfterStart) {
     EXPECT_EQ(engine.get_tries_left(), MAX_TRIES);
 }
 
+TEST_F(MastermindEngineTest, ShouldStartGameThrowIndistinctValuesErrorForPatternWithRepeatedElements) {
+    using ::testing::Return;
+    EXPECT_CALL(generator_mock, function_operator()).Times(Exactly(1));
+    mastermind::mastermind_engine me(test_generator);
+    ON_CALL(generator_mock, function_operator()).WillByDefault(Return(std::vector<int>{ { 1, 2, 2, 4, 3 } }));
+
+    EXPECT_THROW(me.start_game(PATTERN_SIZE, 6), mastermind::indistinct_values_error);
+}
+
 TEST_F(MastermindEngineTest, ShouldCheckSolutionThrowIncorrectCodeSizeErrorForInvalidSizedSolution) {
     EXPECT_CALL(generator_mock, function_operator()).Times(Exactly(1));
     mastermind::mastermind_engine me(test_generator);
     me.start_game(PATTERN_SIZE, 6);
 
     EXPECT_THROW(me.check_solution(std::vector<int>{ {1, 2, 3, 4, 5, 6} }), mastermind::incorrect_code_size_error);
+}
+
+TEST_F(MastermindEngineTest, ShouldCheckSolutionThrowIndistinctValuesErrorForCodeWithRepeatedElements) {
+    EXPECT_CALL(generator_mock, function_operator()).Times(Exactly(1));
+    mastermind::mastermind_engine me(test_generator);
+    me.start_game(PATTERN_SIZE, 6);
+
+    EXPECT_THROW(me.check_solution(std::vector<int>{ {1, 2, 3, 5, 5} }), mastermind::indistinct_values_error);
 }
 
 TEST_F(MastermindEngineTest, ShouldGetStatusReturnNotInitializedStatusIfGameIsNotEnded) {

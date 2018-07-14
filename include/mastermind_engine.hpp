@@ -81,6 +81,11 @@ namespace mastermind {
         }
 
         m_code_pattern = std::move(m_code_generator(code_size));
+
+        if (!are_all_values_different(m_code_pattern)) {
+            throw indistinct_values_error();
+        }
+
         m_tries_left = max_tries;
         m_status = game_status::IN_GAME;
     }
@@ -89,6 +94,10 @@ namespace mastermind {
     std::optional<game_result> mastermind_engine<Item>::check_solution(const std::vector<Item> s) {
         if (s.size() != m_code_pattern.size()) {
             throw mastermind::incorrect_code_size_error{ s.size(), m_code_pattern.size() };
+        }
+
+        if (!are_all_values_different(s)) {
+            throw indistinct_values_error();
         }
 
         return (m_status == game_status::NOT_INITIALIZED) ? std::nullopt : get_game_result(s);
