@@ -12,6 +12,11 @@ namespace mastermind {
         ENDED
     };
 
+    struct game_start_params {
+        size_t code_size;
+        size_t max_tries;
+    };
+
     struct game_result {
         bool valid;
         size_t pegs_in_right_place;
