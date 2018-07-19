@@ -18,7 +18,7 @@ public:
     const size_t PATTERN_SIZE{ 5 };
     std::vector<int> test_solution;
     MockGenerator generator_mock;
-    std::function<std::vector<int>(size_t)> test_generator;
+    mastermind::mastermind_engine<int>::code_gen_type test_generator;
     mastermind::mastermind_engine<int> engine;
 
     MastermindEngineTest() :

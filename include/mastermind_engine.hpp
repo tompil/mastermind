@@ -13,8 +13,11 @@ namespace mastermind {
     template <typename Item>
     class mastermind_engine {
     public:
+        typedef Item value_type;
+        typedef std::function<std::vector<Item>(size_t)> code_gen_type;
+
         mastermind_engine() = delete;
-        explicit mastermind_engine(std::function<std::vector<Item>(size_t)> code_pattern_generator);
+        explicit mastermind_engine(code_gen_type code_pattern_generator);
         mastermind_engine(const mastermind_engine<Item>&) = delete;
         mastermind_engine<Item>& operator=(const mastermind_engine<Item>&) = delete;
         mastermind_engine(mastermind_engine<Item>&& me);
@@ -30,7 +33,7 @@ namespace mastermind {
         ~mastermind_engine() = default;
 
     private:
-        std::function<std::vector<Item>(size_t)> m_code_generator;
+        code_gen_type m_code_generator;
         game_status m_status{ game_status::NOT_INITIALIZED };
         std::vector<Item> m_code_pattern{};
         size_t m_tries_left{ 0 };
@@ -41,7 +44,7 @@ namespace mastermind {
     };
 
     template <typename Item>
-    mastermind_engine<Item>::mastermind_engine(std::function<std::vector<Item>(size_t)> code_pattern_generator)
+    mastermind_engine<Item>::mastermind_engine(code_gen_type code_pattern_generator)
         : m_code_generator{ code_pattern_generator } {
     }
 
