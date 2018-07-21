@@ -28,7 +28,7 @@ namespace mastermind {
         game_status get_status() const { return m_status; }
 
         void start_game(size_t code_size, size_t max_tries);
-        std::optional<game_result> check_solution(const std::vector<Item> s);
+        std::optional<game_result> check_solution(const std::vector<Item>& s);
 
         ~mastermind_engine() = default;
 
@@ -94,7 +94,7 @@ namespace mastermind {
     }
 
     template <typename Item>
-    std::optional<game_result> mastermind_engine<Item>::check_solution(const std::vector<Item> s) {
+    std::optional<game_result> mastermind_engine<Item>::check_solution(const std::vector<Item>& s) {
         if (s.size() != m_code_pattern.size()) {
             throw mastermind::incorrect_code_size_error{ s.size(), m_code_pattern.size() };
         }
