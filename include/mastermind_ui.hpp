@@ -16,6 +16,7 @@ namespace mastermind {
         virtual void show_winning_message() = 0;
         virtual game_start_params get_start_params() = 0;
         virtual std::vector<Item> ask_for_solution() = 0;
+        virtual bool ask_play_again() = 0;
     };
 
 }
