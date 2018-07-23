@@ -46,7 +46,7 @@ TEST_F(MastermindEngineTest, ShouldBeMoveConstructible) {
 }
 
 TEST_F(MastermindEngineTest, ShouldGameObjectBeCorrectlyMoveConstructed) {
-    engine.start_game(PATTERN_SIZE, 8);
+    engine.start_game({ PATTERN_SIZE, 8 });
     engine.check_solution(std::vector<int>{ { 1, 3, 4, 6, 5 } });
     auto origin_tries_left = engine.get_tries_left();
     auto origin_status = engine.get_status();
@@ -66,7 +66,7 @@ TEST_F(MastermindEngineTest, ShouldGameObjectBeCorrectlyMoveConstructed) {
 }
 
 TEST_F(MastermindEngineTest, ShouldGameObjectBeCorrectlyMoveAssigned) {
-    engine.start_game(PATTERN_SIZE, 8);
+    engine.start_game({ PATTERN_SIZE, 8 });
     engine.check_solution(std::vector<int>{ { 1, 3, 4, 6, 5 } });
     auto origin_tries_left = engine.get_tries_left();
     auto origin_status = engine.get_status();
@@ -93,7 +93,7 @@ TEST_F(MastermindEngineTest, ShouldCorrectAnswerBeNulloptBeforeStart) {
 TEST_F(MastermindEngineTest, ShouldCorrectAnswerBeTheSameAsGenerated) {
     EXPECT_CALL(generator_mock, function_operator()).Times(Exactly(1));
 
-    engine.start_game(PATTERN_SIZE, 8);
+    engine.start_game({ PATTERN_SIZE, 8 });
     auto result = engine.get_correct_solution();
 
     ASSERT_TRUE(result.has_value());
@@ -104,7 +104,7 @@ TEST_F(MastermindEngineTest, ShouldTriesLeftReturnMaxTriesJustAfterStart) {
     EXPECT_CALL(generator_mock, function_operator()).Times(Exactly(1));
     const int MAX_TRIES{ 8 };
 
-    engine.start_game(PATTERN_SIZE, MAX_TRIES);
+    engine.start_game({ PATTERN_SIZE, MAX_TRIES });
 
     EXPECT_EQ(engine.get_tries_left(), MAX_TRIES);
 }
@@ -115,13 +115,13 @@ TEST_F(MastermindEngineTest, ShouldStartGameThrowIndistinctValuesErrorForPattern
     mastermind::mastermind_engine me(test_generator);
     ON_CALL(generator_mock, function_operator()).WillByDefault(Return(std::vector<int>{ { 1, 2, 2, 4, 3 } }));
 
-    EXPECT_THROW(me.start_game(PATTERN_SIZE, 6), mastermind::indistinct_values_error);
+    EXPECT_THROW(me.start_game({ PATTERN_SIZE, 6 }), mastermind::indistinct_values_error);
 }
 
 TEST_F(MastermindEngineTest, ShouldCheckSolutionThrowIncorrectCodeSizeErrorForInvalidSizedSolution) {
     EXPECT_CALL(generator_mock, function_operator()).Times(Exactly(1));
     mastermind::mastermind_engine me(test_generator);
-    me.start_game(PATTERN_SIZE, 6);
+    me.start_game({ PATTERN_SIZE, 6 });
 
     EXPECT_THROW(me.check_solution(std::vector<int>{ {1, 2, 3, 4, 5, 6} }), mastermind::incorrect_code_size_error);
 }
@@ -129,7 +129,7 @@ TEST_F(MastermindEngineTest, ShouldCheckSolutionThrowIncorrectCodeSizeErrorForIn
 TEST_F(MastermindEngineTest, ShouldCheckSolutionThrowIndistinctValuesErrorForCodeWithRepeatedElements) {
     EXPECT_CALL(generator_mock, function_operator()).Times(Exactly(1));
     mastermind::mastermind_engine me(test_generator);
-    me.start_game(PATTERN_SIZE, 6);
+    me.start_game({ PATTERN_SIZE, 6 });
 
     EXPECT_THROW(me.check_solution(std::vector<int>{ {1, 2, 3, 5, 5} }), mastermind::indistinct_values_error);
 }
@@ -141,7 +141,7 @@ TEST_F(MastermindEngineTest, ShouldGetStatusReturnNotInitializedStatusIfGameIsNo
 TEST_F(MastermindEngineTest, ShouldGetStatusReturnInGameStatusIfGameIsNotEnded) {
     EXPECT_CALL(generator_mock, function_operator()).Times(Exactly(1));
 
-    engine.start_game(PATTERN_SIZE, 8);
+    engine.start_game({ PATTERN_SIZE, 8 });
 
     EXPECT_EQ(engine.get_status(), mastermind::game_status::IN_GAME);
 }
@@ -149,7 +149,7 @@ TEST_F(MastermindEngineTest, ShouldGetStatusReturnInGameStatusIfGameIsNotEnded) 
 TEST_F(MastermindEngineTest, ShouldGetStatusReturnEndedStatusWithCorrectAnswer) {
     EXPECT_CALL(generator_mock, function_operator()).Times(Exactly(1));
 
-    engine.start_game(PATTERN_SIZE, 8);
+    engine.start_game({ PATTERN_SIZE, 8 });
     auto result = engine.check_solution(test_solution);
 
     EXPECT_EQ(engine.get_status(), mastermind::game_status::ENDED);
@@ -159,7 +159,7 @@ TEST_F(MastermindEngineTest, ShouldCheckSolutionReturnEndedStatusAfterLost) {
     EXPECT_CALL(generator_mock, function_operator()).Times(Exactly(1));
     std::vector<int> incorrect_solution{ { 1, 3, 4, 5, 6 } };
     const size_t MAX_TRIES{ 2 };
-    engine.start_game(PATTERN_SIZE, MAX_TRIES);
+    engine.start_game({ PATTERN_SIZE, MAX_TRIES });
 
     for (size_t i{ 0 }; i < MAX_TRIES; ++i) {
         engine.check_solution(incorrect_solution);
@@ -170,7 +170,7 @@ TEST_F(MastermindEngineTest, ShouldCheckSolutionReturnEndedStatusAfterLost) {
 
 TEST_F(MastermindEngineTest, ShouldCheckSolutionReturnFalseValidValueInIncorrectSolution) {
     EXPECT_CALL(generator_mock, function_operator()).Times(Exactly(1));
-    engine.start_game(PATTERN_SIZE, 8);
+    engine.start_game({ PATTERN_SIZE, 8 });
 
     auto incorrect_answer_result = engine.check_solution(std::vector<int>{ { 1, 3, 4, 6, 5 } });
     ASSERT_TRUE(incorrect_answer_result.has_value());
@@ -179,7 +179,7 @@ TEST_F(MastermindEngineTest, ShouldCheckSolutionReturnFalseValidValueInIncorrect
 
 TEST_F(MastermindEngineTest, ShouldCheckSolutionReturnTrueValidValueInCorrectSolution) {
     EXPECT_CALL(generator_mock, function_operator()).Times(Exactly(1));
-    engine.start_game(PATTERN_SIZE, 8);
+    engine.start_game({ PATTERN_SIZE, 8 });
 
     auto correct_answer_result = engine.check_solution(test_solution);
     ASSERT_TRUE(correct_answer_result.has_value());
@@ -188,7 +188,7 @@ TEST_F(MastermindEngineTest, ShouldCheckSolutionReturnTrueValidValueInCorrectSol
 
 TEST_F(MastermindEngineTest, ShouldCheckSolutionReturnCorrectNumberOfPegsInRightPlaceInIncorrectSolution) {
     EXPECT_CALL(generator_mock, function_operator()).Times(Exactly(1));
-    engine.start_game(PATTERN_SIZE, 8);
+    engine.start_game({ PATTERN_SIZE, 8 });
 
     auto incorrect_answer_result = engine.check_solution(std::vector<int>{ { 1, 3, 4, 6, 5 } });
     ASSERT_TRUE(incorrect_answer_result.has_value());
@@ -197,7 +197,7 @@ TEST_F(MastermindEngineTest, ShouldCheckSolutionReturnCorrectNumberOfPegsInRight
 
 TEST_F(MastermindEngineTest, ShouldCheckSolutionReturnMaxNumberOfPegsInRightPlaceInCorrectSolution) {
     EXPECT_CALL(generator_mock, function_operator()).Times(Exactly(1));
-    engine.start_game(PATTERN_SIZE, 8);
+    engine.start_game({ PATTERN_SIZE, 8 });
 
     auto correct_answer_result = engine.check_solution(test_solution);
     ASSERT_TRUE(correct_answer_result.has_value());
@@ -206,7 +206,7 @@ TEST_F(MastermindEngineTest, ShouldCheckSolutionReturnMaxNumberOfPegsInRightPlac
 
 TEST_F(MastermindEngineTest, ShouldCheckSolutionReturnCorrectNumberOfPegsInRightColorInIncorrectSolution) {
     EXPECT_CALL(generator_mock, function_operator()).Times(Exactly(1));
-    engine.start_game(PATTERN_SIZE, 8);
+    engine.start_game({ PATTERN_SIZE, 8 });
 
     auto incorrect_answer_result = engine.check_solution(std::vector<int>{ { 1, 3, 4, 5, 6 } });
     ASSERT_TRUE(incorrect_answer_result.has_value());
@@ -215,7 +215,7 @@ TEST_F(MastermindEngineTest, ShouldCheckSolutionReturnCorrectNumberOfPegsInRight
 
 TEST_F(MastermindEngineTest, ShouldCheckSolutionReturnCorrectZeroPegsInRightColorInCorrectSolution) {
     EXPECT_CALL(generator_mock, function_operator()).Times(Exactly(1));
-    engine.start_game(PATTERN_SIZE, 8);
+    engine.start_game({ PATTERN_SIZE, 8 });
 
     auto correct_answer_result = engine.check_solution(test_solution);
     ASSERT_TRUE(correct_answer_result.has_value());
@@ -235,7 +235,7 @@ TEST_F(MastermindEngineTest, ShouldGetTriesLeftReturnMaxValueAfterStart) {
     EXPECT_CALL(generator_mock, function_operator()).Times(Exactly(1));
     const size_t MAX_TRIES{ 6 };
 
-    engine.start_game(PATTERN_SIZE, MAX_TRIES);
+    engine.start_game({ PATTERN_SIZE, MAX_TRIES });
 
     ASSERT_EQ(engine.get_status(), mastermind::game_status::IN_GAME);
     EXPECT_EQ(engine.get_tries_left(), MAX_TRIES);
@@ -244,7 +244,7 @@ TEST_F(MastermindEngineTest, ShouldGetTriesLeftReturnMaxValueAfterStart) {
 TEST_F(MastermindEngineTest, ShouldGetTriesLeftReturnZeroAfterEnd) {
     EXPECT_CALL(generator_mock, function_operator()).Times(Exactly(1));
 
-    engine.start_game(PATTERN_SIZE, 6);
+    engine.start_game({ PATTERN_SIZE, 6 });
     engine.check_solution(test_solution);
 
     ASSERT_EQ(engine.get_status(), mastermind::game_status::ENDED);
@@ -255,7 +255,7 @@ TEST_F(MastermindEngineTest, ShouldTriesLeftDecrementAfterIncorrectSolution) {
     EXPECT_CALL(generator_mock, function_operator()).Times(Exactly(1));
     const size_t MAX_TRIES{ 6 };
 
-    engine.start_game(PATTERN_SIZE, MAX_TRIES);
+    engine.start_game({ PATTERN_SIZE, MAX_TRIES });
     engine.check_solution(std::vector<int>{ { 1, 3, 4, 5, 6 } });
 
     ASSERT_EQ(engine.get_status(), mastermind::game_status::IN_GAME);
@@ -263,5 +263,5 @@ TEST_F(MastermindEngineTest, ShouldTriesLeftDecrementAfterIncorrectSolution) {
 }
 
 TEST_F(MastermindEngineTest, ShouldStartGameThrowZeroMaxTriesValueErrorIfMaxTriesIsZero) {
-    ASSERT_THROW(engine.start_game(PATTERN_SIZE, 0), mastermind::zero_max_tries_value_error);
+    ASSERT_THROW(engine.start_game({ PATTERN_SIZE, 0 }), mastermind::zero_max_tries_value_error);
 }

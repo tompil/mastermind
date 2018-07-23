@@ -27,7 +27,7 @@ namespace mastermind {
         size_t get_tries_left() const { return m_tries_left; }
         game_status get_status() const { return m_status; }
 
-        void start_game(size_t code_size, size_t max_tries);
+        void start_game(game_start_params start_params);
         std::optional<game_result> check_solution(const std::vector<Item>& s);
 
         ~mastermind_engine() = default;
@@ -78,18 +78,18 @@ namespace mastermind {
     }
 
     template <typename Item>
-    void mastermind_engine<Item>::start_game(size_t code_size, size_t max_tries) {
-        if (max_tries == 0) {
+    void mastermind_engine<Item>::start_game(game_start_params start_params) {
+        if (start_params.max_tries == 0) {
             throw zero_max_tries_value_error();
         }
 
-        m_code_pattern = std::move(m_code_generator(code_size));
+        m_code_pattern = std::move(m_code_generator(start_params.code_size));
 
         if (!are_all_values_different(m_code_pattern)) {
             throw indistinct_values_error();
         }
 
-        m_tries_left = max_tries;
+        m_tries_left = start_params.max_tries;
         m_status = game_status::IN_GAME;
     }
 
