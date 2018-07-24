@@ -16,19 +16,17 @@ public:
 class MastermindEngineTest : public ::testing::Test {
 public:
     const size_t PATTERN_SIZE{ 5 };
-    std::vector<int> test_solution;
-    MockGenerator generator_mock;
+    const std::vector<int> TEST_CORRECT_SOLUTION{ { 1, 2, 3, 4, 5 } };
+    MockGenerator generator_mock{};
     mastermind::mastermind_engine<int>::code_gen_type test_generator;
     mastermind::mastermind_engine<int> engine;
 
     MastermindEngineTest() :
-        test_solution{ { 1, 2, 3, 4, 5 } },
-        generator_mock{},
         test_generator{ std::bind(&MockGenerator::operator(), &generator_mock, std::placeholders::_1) },
         engine{ test_generator }
     {
         using ::testing::Return; 
-        ON_CALL(generator_mock, function_operator()).WillByDefault(Return(test_solution));
+        ON_CALL(generator_mock, function_operator()).WillByDefault(Return(TEST_CORRECT_SOLUTION));
     }
 };
 
@@ -97,7 +95,7 @@ TEST_F(MastermindEngineTest, ShouldCorrectAnswerBeTheSameAsGenerated) {
     auto result = engine.get_correct_solution();
 
     ASSERT_TRUE(result.has_value());
-    EXPECT_THAT(result.value().get(), ::testing::ContainerEq(test_solution));
+    EXPECT_THAT(result.value().get(), ::testing::ContainerEq(TEST_CORRECT_SOLUTION));
 }
 
 TEST_F(MastermindEngineTest, ShouldTriesLeftReturnMaxTriesJustAfterStart) {
@@ -150,7 +148,7 @@ TEST_F(MastermindEngineTest, ShouldGetStatusReturnEndedStatusWithCorrectAnswer) 
     EXPECT_CALL(generator_mock, function_operator()).Times(Exactly(1));
 
     engine.start_game({ PATTERN_SIZE, 8 });
-    auto result = engine.check_solution(test_solution);
+    auto result = engine.check_solution(TEST_CORRECT_SOLUTION);
 
     EXPECT_EQ(engine.get_status(), mastermind::game_status::ENDED);
 }
@@ -181,7 +179,7 @@ TEST_F(MastermindEngineTest, ShouldCheckSolutionReturnTrueValidValueInCorrectSol
     EXPECT_CALL(generator_mock, function_operator()).Times(Exactly(1));
     engine.start_game({ PATTERN_SIZE, 8 });
 
-    auto correct_answer_result = engine.check_solution(test_solution);
+    auto correct_answer_result = engine.check_solution(TEST_CORRECT_SOLUTION);
     ASSERT_TRUE(correct_answer_result.has_value());
     EXPECT_TRUE(correct_answer_result.value().valid);
 }
@@ -199,9 +197,9 @@ TEST_F(MastermindEngineTest, ShouldCheckSolutionReturnMaxNumberOfPegsInRightPlac
     EXPECT_CALL(generator_mock, function_operator()).Times(Exactly(1));
     engine.start_game({ PATTERN_SIZE, 8 });
 
-    auto correct_answer_result = engine.check_solution(test_solution);
+    auto correct_answer_result = engine.check_solution(TEST_CORRECT_SOLUTION);
     ASSERT_TRUE(correct_answer_result.has_value());
-    EXPECT_EQ(correct_answer_result.value().pegs_in_right_place, test_solution.size());
+    EXPECT_EQ(correct_answer_result.value().pegs_in_right_place, TEST_CORRECT_SOLUTION.size());
 }
 
 TEST_F(MastermindEngineTest, ShouldCheckSolutionReturnCorrectNumberOfPegsInRightColorInIncorrectSolution) {
@@ -217,7 +215,7 @@ TEST_F(MastermindEngineTest, ShouldCheckSolutionReturnCorrectZeroPegsInRightColo
     EXPECT_CALL(generator_mock, function_operator()).Times(Exactly(1));
     engine.start_game({ PATTERN_SIZE, 8 });
 
-    auto correct_answer_result = engine.check_solution(test_solution);
+    auto correct_answer_result = engine.check_solution(TEST_CORRECT_SOLUTION);
     ASSERT_TRUE(correct_answer_result.has_value());
     EXPECT_EQ(correct_answer_result.value().pegs_in_right_color, 0);
 }
@@ -245,7 +243,7 @@ TEST_F(MastermindEngineTest, ShouldGetTriesLeftReturnZeroAfterEnd) {
     EXPECT_CALL(generator_mock, function_operator()).Times(Exactly(1));
 
     engine.start_game({ PATTERN_SIZE, 6 });
-    engine.check_solution(test_solution);
+    engine.check_solution(TEST_CORRECT_SOLUTION);
 
     ASSERT_EQ(engine.get_status(), mastermind::game_status::ENDED);
     EXPECT_EQ(engine.get_tries_left(), 0);
