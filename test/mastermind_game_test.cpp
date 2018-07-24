@@ -1,7 +1,11 @@
-#include "../include/mastermind_ui.hpp"
 #include "../include/mastermind_game.hpp"
+#include "../include/mastermind_ui.hpp"
+#include "../include/mastermind_utils.hpp"
 #include "gmock/gmock.h"
 
+using ::testing::_;
+using ::testing::Expectation;
+using ::testing::Return;
 
 class MockGenerator {
 public:
@@ -12,12 +16,13 @@ public:
 class MastermindUiMock : public mastermind::mastermind_ui<int> {
 public:
     MOCK_METHOD0(show_board, void());
-    MOCK_METHOD0(show_tries_left, void());
-    MOCK_METHOD1(show_status, void(mastermind::game_status));
+    MOCK_METHOD1(show_tries_left, void(size_t));
+    MOCK_METHOD1(show_game_result, void(mastermind::game_result));
     MOCK_METHOD0(show_lost_message, void());
     MOCK_METHOD0(show_winning_message, void());
     MOCK_METHOD0(get_start_params, mastermind::game_start_params());
     MOCK_METHOD0(ask_for_solution, std::vector<int>());
+    MOCK_METHOD0(ask_play_again, bool());
 };
 
 class MastermindEngineHelperMock {
@@ -26,7 +31,7 @@ public:
     MOCK_METHOD0(get_correct_solution, std::optional<std::reference_wrapper<const std::vector<int>>>());
     MOCK_METHOD0(get_tries_left, size_t());
     MOCK_METHOD0(get_status, mastermind::game_status());
-    MOCK_METHOD2(start_game, void(size_t, size_t));
+    MOCK_METHOD1(start_game, void(mastermind::game_start_params));
     MOCK_METHOD1(check_solution, std::optional<mastermind::game_result>(const std::vector<int>&));
 };
 
@@ -41,7 +46,7 @@ public:
     static std::optional<std::reference_wrapper<const std::vector<int>>> get_correct_solution() { return mock->get_correct_solution(); }
     static size_t get_tries_left() { return mock->get_tries_left(); }
     static mastermind::game_status get_status() { return mock->get_status(); }
-    static void start_game(size_t code_size, size_t max_tries) { mock->start_game(code_size, max_tries); }
+    static void start_game(mastermind::game_start_params p) { mock->start_game(p); }
     static std::optional<mastermind::game_result> check_solution(const std::vector<int>& s) { return mock->check_solution(s); }
 };
 
