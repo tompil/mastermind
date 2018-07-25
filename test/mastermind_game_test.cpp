@@ -4,6 +4,8 @@
 #include "gmock/gmock.h"
 
 using ::testing::_;
+using ::testing::AtLeast;
+using ::testing::Exactly;
 using ::testing::Expectation;
 using ::testing::Return;
 
@@ -70,10 +72,9 @@ public:
     MastermindGameTest() {
         MastermindEngineMock::mock = &me_helper;
 
-        using ::testing::Exactly;
-
         ON_CALL(ui_mock, ask_play_again()).WillByDefault(Return(false));
         ON_CALL(ui_mock, get_start_params()).WillByDefault(Return(TEST_PARAMS));
+        ON_CALL(ui_mock, ask_for_solution()).WillByDefault(Return(TEST_INCORRECT_SOLUTION));
         ON_CALL(me_helper, get_tries_left()).WillByDefault(Return(TEST_TRIES_LEFT));
         ON_CALL(generator_mock, function_operator()).WillByDefault(Return(TEST_CORRECT_SOLUTION));
         ON_CALL(me_helper, check_solution(_)).WillByDefault(Return(TEST_NEGATIVE_GAME_RESULT));
@@ -96,21 +97,15 @@ TEST_F(MastermindGameTest, ShouldCallTheEngineConstructorOnlyOnce) {
 }
 
 TEST_F(MastermindGameTest, ShouldShowBoardAfterRun) {
-    using ::testing::Exactly;
-
     ON_CALL(me_helper, get_status()).WillByDefault(Return(mastermind::game_status::ENDED));
     mastermind::mastermind_game<MastermindEngineMock> game{ ui_mock, test_generator };
 
 
     Expectation show_board = EXPECT_CALL(ui_mock, show_board()).Times(Exactly(1));
-    Expectation get_status = EXPECT_CALL(me_helper, get_status()).After(show_board);
-    EXPECT_CALL(ui_mock, ask_play_again()).After(show_board, get_status);
     game.run();
 }
 
 TEST_F(MastermindGameTest, ShouldSetGameStartParamsEnteredByUser) {
-    using ::testing::Exactly;
-
     ON_CALL(me_helper, get_status()).WillByDefault(Return(mastermind::game_status::ENDED));
     mastermind::mastermind_game<MastermindEngineMock> game{ ui_mock, test_generator };
 
@@ -120,16 +115,14 @@ TEST_F(MastermindGameTest, ShouldSetGameStartParamsEnteredByUser) {
 }
 
 TEST_F(MastermindGameTest, ShouldGetStatusBeCalledAfterShowBoardAndStartGame) {
-    using ::testing::AtLeast;
-
-    ON_CALL(me_helper, get_status()).WillByDefault(Return(mastermind::game_status::ENDED));
+    EXPECT_CALL(me_helper, get_status()).WillRepeatedly(Return(mastermind::game_status::ENDED));
     mastermind::mastermind_game<MastermindEngineMock> game{ ui_mock, test_generator };
 
     Expectation show_board = EXPECT_CALL(ui_mock, show_board()).Times(AtLeast(1));
     Expectation get_start_params = EXPECT_CALL(ui_mock, get_start_params()).Times(AtLeast(1));
     Expectation start_game = EXPECT_CALL(me_helper, start_game(_)).Times(AtLeast(1));;
 
-    EXPECT_CALL(me_helper, get_status()).After(show_board, get_start_params, start_game);
+    EXPECT_CALL(me_helper, get_status()).Times(AtLeast(1)).After(show_board, get_start_params, start_game);
     game.run();
 }
 
@@ -137,15 +130,18 @@ TEST_F(MastermindGameTest, ShouldAskPlayAgainBeCalledAfterGetStatusReturnsNoInGa
     ON_CALL(me_helper, get_status()).WillByDefault(Return(mastermind::game_status::ENDED));
     mastermind::mastermind_game<MastermindEngineMock> game{ ui_mock, test_generator };
 
-    Expectation get_status = EXPECT_CALL(me_helper, get_status());
+    Expectation get_status = EXPECT_CALL(me_helper, get_status()).Times(AtLeast(1));
     EXPECT_CALL(ui_mock, ask_play_again()).After(get_status);
     game.run();
 }
 
 TEST_F(MastermindGameTest, ShouldShowTriesLeftReceiveTriesLeftNumberFromTheEngine) {
-    ON_CALL(me_helper, get_status()).WillByDefault(Return(mastermind::game_status::IN_GAME));
     mastermind::mastermind_game<MastermindEngineMock> game{ ui_mock, test_generator };
-    
+
+    EXPECT_CALL(me_helper, get_status())
+        .WillOnce(Return(mastermind::game_status::IN_GAME))
+        .WillOnce(Return(mastermind::game_status::IN_GAME))
+        .WillRepeatedly(Return(mastermind::game_status::ENDED));
     Expectation get_tries_left = EXPECT_CALL(me_helper, get_tries_left());
     EXPECT_CALL(ui_mock, show_tries_left(TEST_TRIES_LEFT)).After(get_tries_left);
     game.run();
@@ -213,5 +209,70 @@ TEST_F(MastermindGameTest, ShouldShowLostMessageAfterPassIncorrectSolutionAtLast
 
     Expectation check_solution = EXPECT_CALL(me_helper, check_solution(_));
     EXPECT_CALL(ui_mock, show_lost_message()).After(check_solution);
+    game.run();
+}
+
+TEST_F(MastermindGameTest, ShouldNotShowLostMessageAfterPassIncorrectSolutionAtNotLastTry) {
+    EXPECT_CALL(me_helper, get_status())
+        .WillOnce(Return(mastermind::game_status::IN_GAME))
+        .WillOnce(Return(mastermind::game_status::IN_GAME))
+        .WillRepeatedly(Return(mastermind::game_status::ENDED));
+    ON_CALL(ui_mock, ask_for_solution()).WillByDefault(Return(TEST_INCORRECT_SOLUTION));
+    ON_CALL(me_helper, check_solution(_)).WillByDefault(Return(TEST_NEGATIVE_GAME_RESULT));
+    mastermind::mastermind_game<MastermindEngineMock> game{ ui_mock, test_generator };
+
+    EXPECT_CALL(ui_mock, show_lost_message()).Times(0);
+    game.run();
+}
+
+TEST_F(MastermindGameTest, ShouldNotShowWinningMessageAfterPassIncorrectSolution) {
+    EXPECT_CALL(me_helper, get_status())
+        .WillOnce(Return(mastermind::game_status::IN_GAME))
+        .WillRepeatedly(Return(mastermind::game_status::ENDED));
+    ON_CALL(ui_mock, ask_for_solution()).WillByDefault(Return(TEST_INCORRECT_SOLUTION));
+    ON_CALL(me_helper, check_solution(_)).WillByDefault(Return(TEST_NEGATIVE_GAME_RESULT));
+    mastermind::mastermind_game<MastermindEngineMock> game{ ui_mock, test_generator };
+
+    EXPECT_CALL(ui_mock, show_winning_message()).Times(0);
+    game.run();
+}
+
+TEST_F(MastermindGameTest, ShouldNotGameResultAfterPassCorrectSolution) {
+    EXPECT_CALL(me_helper, get_status())
+        .WillOnce(Return(mastermind::game_status::IN_GAME))
+        .WillRepeatedly(Return(mastermind::game_status::ENDED));
+    ON_CALL(ui_mock, ask_for_solution()).WillByDefault(Return(TEST_CORRECT_SOLUTION));
+    ON_CALL(me_helper, check_solution(_)).WillByDefault(Return(TEST_POSITIVE_GAME_RESULT));
+    mastermind::mastermind_game<MastermindEngineMock> game{ ui_mock, test_generator };
+
+    EXPECT_CALL(ui_mock, show_game_result(_)).Times(0);
+    game.run();
+}
+
+TEST_F(MastermindGameTest, ShouldRestartTheGameAfterPositiveResultOfAskPlayAgain) {
+    ON_CALL(me_helper, get_status()).WillByDefault(Return(mastermind::game_status::ENDED));
+    mastermind::mastermind_game<MastermindEngineMock> game{ ui_mock, test_generator };
+
+    Expectation ask_play_again = EXPECT_CALL(ui_mock, ask_play_again())
+        .WillOnce(Return(true))
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(ui_mock, show_board()).Times(Exactly(2));
+    EXPECT_CALL(ui_mock, get_start_params()).Times(Exactly(2));
+    EXPECT_CALL(me_helper, start_game(_)).Times(Exactly(2));
+    game.run();
+}
+
+TEST_F(MastermindGameTest, ShouldAskForSolutionAgainIfGameIsNotEnded) {
+    mastermind::mastermind_game<MastermindEngineMock> game{ ui_mock, test_generator };
+
+    EXPECT_CALL(me_helper, get_status())
+        .WillOnce(Return(mastermind::game_status::IN_GAME))
+        .WillOnce(Return(mastermind::game_status::IN_GAME))
+        .WillOnce(Return(mastermind::game_status::IN_GAME))
+        .WillRepeatedly(Return(mastermind::game_status::ENDED));
+    EXPECT_CALL(me_helper, check_solution(_))
+        .WillOnce(Return(TEST_NEGATIVE_GAME_RESULT))
+        .WillRepeatedly(Return(TEST_POSITIVE_GAME_RESULT));
+    EXPECT_CALL(ui_mock, ask_for_solution()).Times(Exactly(2));
     game.run();
 }
