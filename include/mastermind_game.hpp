@@ -28,7 +28,31 @@ namespace mastermind {
 
     template<typename Item>
     void mastermind_game<Item>::run() {
+        do {
+            m_ui.show_board();
+            auto start_params = m_ui.get_start_params();
+            m_me.start_game(start_params);
 
+            while (m_me.get_status() == game_status::IN_GAME) {
+
+                auto tries_left = m_me.get_tries_left();
+                m_ui.show_tries_left(tries_left);
+
+                auto user_solution = m_ui.ask_for_solution();
+                std::optional<game_result> result = m_me.check_solution(user_solution);
+
+                if (result.value().valid) {
+                    m_ui.show_winning_message();
+                }
+                else {
+                    m_ui.show_game_result(result.value());
+
+                    if (m_me.get_status() == game_status::ENDED) {
+                        m_ui.show_lost_message();
+                    }
+                }
+            }
+        } while(m_ui.ask_play_again());
     }
 
 }
