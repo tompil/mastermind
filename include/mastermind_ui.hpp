@@ -17,6 +17,11 @@ namespace mastermind {
         virtual game_start_params get_start_params() = 0;
         virtual std::vector<Item> ask_for_solution() = 0;
         virtual bool ask_play_again() = 0;
+        virtual ~mastermind_ui() = 0;
     };
+
+    template<typename Item>
+    mastermind_ui<Item>::~mastermind_ui<Item>()
+    {}
 
 }
