@@ -11,7 +11,7 @@ namespace mastermind {
     class basic_code_pattern_generator {
     public:
         basic_code_pattern_generator(const std::vector<Item>& code_set);
-        std::vector<Item> operator()(size_t pattern_size) const;
+        std::vector<Item> operator()(size_t pattern_size);
     private:
         std::vector<Item> m_code_set;
         std::random_device rd{};
@@ -24,7 +24,7 @@ namespace mastermind {
     };
 
     template<typename Item>
-    std::vector<Item> basic_code_pattern_generator<Item>::operator()(size_t pattern_size) const {
+    std::vector<Item> basic_code_pattern_generator<Item>::operator()(size_t pattern_size) {
         std::shuffle(m_code_set.begin(), m_code_set.end(), g);
         return { m_code_set.begin(), m_code_set.begin() + pattern_size };
     }
