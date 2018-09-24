@@ -10,7 +10,7 @@ namespace mastermind {
     template<typename Item>
     class basic_code_pattern_generator {
     public:
-        basic_code_pattern_generator(const std::vector<Item>& code_set);
+        explicit basic_code_pattern_generator(const std::vector<Item>& code_set);
         std::vector<Item> operator()(size_t pattern_size);
     private:
         std::vector<Item> m_code_set;
